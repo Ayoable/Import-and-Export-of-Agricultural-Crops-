@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as  pd
 import plotly.graph_objects as go
+import plotly.express as px
+import plotly.figure_factory as ff
 
 st.header('Ireland and Other Countries Agricultural')
 
@@ -65,27 +67,131 @@ def Home():
 
 def Values():
     st.subheader('Analysis of Export and Import Values')
-    fig1 = go.Figure(
-        data=[go.Bar(x=data['Area'], y=data['Export Value'])],
-        layout_title_text="Export Value analysis for each country"
-    )
+    fig1 = px.bar(x=data['Area'], y=data['Export Value'], title="Export Value analysis for each country")
     st.plotly_chart(fig1)
     
-    fig2 = go.Figure(
-        data=[go.Bar(x=data['Area'], y=data['Import Value'])],
-        layout_title_text="Import Value analysis for each country"
-    )
+    fig4 = px.bar(y=data['Export Value'], x=data['Year'], color=data['Area'], title='Yearly Export Value of all Countries specified')
+    st.plotly_chart(fig4)
+    
+    
+    fig2 = px.bar(x=data['Area'], y=data['Import Value'], title="Import Value analysis for each country")
     st.plotly_chart(fig2)
+    
+    fig3 = px.bar(y=data['Import Value'], x=data['Year'], color=data['Area'], title='Yearly Import Value of all Countries specified')
+    st.plotly_chart(fig3)
     
     
 def Quantity():
     st.subheader('Analysis of Export and Import Quantity')
+    fig1 = px.bar(x=data['Area'], y=data['Export Quantity'], title="Export Quantity analysis for each country")
+    st.plotly_chart(fig1)
+    
+    fig4 = px.bar(y=data['Export Quantity'], x=data['Year'], color=data['Area'], title='Yearly Export Quantity of all Countries specified')
+    st.plotly_chart(fig4)
     
     
+    fig2 = px.bar(x=data['Area'], y=data['Import Quantity'], title="Import Quantity analysis for each country")
+    st.plotly_chart(fig2)
+    
+    fig3 = px.bar(y=data['Import Quantity'], x=data['Year'], color=data['Area'], title='Yearly Import Quantity of all Countries specified')
+    st.plotly_chart(fig3)
+ 
+ 
+def NetProfit():
+    st.subheader('Analysis of all Net Export Value for Ireland and Other Countries')
+
+    table_data = pd.DataFrame()
+    table_data['Items'] = data.groupby('Area')['Net Export Value'].mean().index
+    table_data['Total Frequency'] = data.groupby('Area')['Net Export Value'].mean().values
+        
+    
+    fig = ff.create_table(table_data, height_constant=60)
+
+    Items = data.groupby('Area')['Net Export Value'].mean().index
+    Total_Frequency = data.groupby('Area')['Net Export Value'].mean().values
+
+    trace1 = go.Bar(x=Items, y=Total_Frequency,
+                        marker=dict(color='#0099ff'),
+                        name='Total frequency of all crops',
+                        xaxis='x2', yaxis='y2')
+    
+
+    fig.add_traces([trace1])
+
+    # initialize xaxis2 and yaxis2
+    fig['layout']['xaxis2'] = {}
+    fig['layout']['yaxis2'] = {}
+
+    # Edit layout for subplots
+    fig.layout.yaxis.update({'domain': [0, .45]})
+    fig.layout.yaxis2.update({'domain': [.6, 1]})
+
+    # The graph's yaxis2 MUST BE anchored to the graph's xaxis2 and vice versa
+    fig.layout.yaxis2.update({'anchor': 'x2'})
+    fig.layout.xaxis2.update({'anchor': 'y2'})
+    fig.layout.yaxis2.update({'title': 'Net Export Value'})
+
+    # Update the margins to add a title and see graph x-labels.
+    fig.layout.margin.update({'t':75, 'l':50})
 
 
+    # Update the height because adding a graph vertically will interact with
+    # the plot height calculated for the table
+    fig.layout.update({'height':800})
 
-sidebar = st.sidebar.radio('Select one:', ['Home', 'Export and Import Values', 'Export and Import Quantity', 'Years of trade'])
+
+    st.plotly_chart(fig)
+     
+   
+
+def Items():
+    st.subheader('Analysis of all crops Items')
+
+    table_data = pd.DataFrame()
+    table_data['Items'] = data['Item'].value_counts().index
+    table_data['Total Frequency'] = data['Item'].value_counts().values
+        
+    
+    fig = ff.create_table(table_data, height_constant=60)
+
+    Items = data['Item'].value_counts().index
+    Total_Frequency = data['Item'].value_counts().values
+
+    trace1 = go.Bar(x=Items, y=Total_Frequency,
+                        marker=dict(color='#0099ff'),
+                        name='Total frequency of all crops',
+                        xaxis='x2', yaxis='y2')
+    
+
+    fig.add_traces([trace1])
+
+    # initialize xaxis2 and yaxis2
+    fig['layout']['xaxis2'] = {}
+    fig['layout']['yaxis2'] = {}
+
+    # Edit layout for subplots
+    fig.layout.yaxis.update({'domain': [0, .45]})
+    fig.layout.yaxis2.update({'domain': [.6, 1]})
+
+    # The graph's yaxis2 MUST BE anchored to the graph's xaxis2 and vice versa
+    fig.layout.yaxis2.update({'anchor': 'x2'})
+    fig.layout.xaxis2.update({'anchor': 'y2'})
+    fig.layout.yaxis2.update({'title': 'Total frequency of all crops'})
+
+    # Update the margins to add a title and see graph x-labels.
+    fig.layout.margin.update({'t':75, 'l':50})
+
+
+    # Update the height because adding a graph vertically will interact with
+    # the plot height calculated for the table
+    fig.layout.update({'height':800})
+
+
+    st.plotly_chart(fig)
+    
+
+
+sidebar = st.sidebar.radio('Select one:', ['Home', 'Export and Import Values', 'Export and Import Quantity', 'Net Export Profit','All Crop Items'])
 
 if sidebar == 'Home':
     Home()
@@ -93,3 +199,7 @@ elif sidebar == 'Export and Import Values':
     Values()
 elif sidebar == 'Export and Import Quantity':
     Quantity()
+elif sidebar == 'Net Export Profit':
+    NetProfit()
+elif sidebar == 'All Crop Items':
+    Items()
